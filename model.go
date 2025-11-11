@@ -40,3 +40,30 @@ func convertFeed(feed database.Feed) Feed {
 		UpdatedAt: feed.UpdatedAt,
 	}
 }
+
+
+type FeedFollow struct {
+	FeedId    uuid.UUID `json:"feedId"`
+	CreatedAt time.Time `json:"createdAt"`
+	Title     string    `json:"title"`
+	Url       string    `json:"url"`
+}
+
+func convertFeedFollow(feed database.GetUserFeedFollowsRow) FeedFollow {
+	return FeedFollow {
+		FeedId: feed.FeedID,
+		CreatedAt: feed.CreatedAt,
+		Title: feed.Title.String,
+		Url: feed.Url.String,
+	}
+}
+
+func convertFeedFollows (dbFeeds []database.GetUserFeedFollowsRow) []FeedFollow {
+	feeds := []FeedFollow{}
+
+	for _, dbFeed := range dbFeeds {
+		feeds = append(feeds, convertFeedFollow(dbFeed))
+	}
+
+	return feeds
+}
