@@ -64,3 +64,38 @@ func (a *apiConfig) addFeedToUser(w http.ResponseWriter, r *http.Request, user d
 
 	respondWithJson(w, 200, struct{}{})
 }
+
+
+func (a *apiConfig) getFeedForUser(w http.ResponseWriter, r *http.Request, user database.User) {
+
+	feeds, err := a.DB.GetUserFeedFollows(r.Context(), user.ID)
+
+	if err != nil {
+		respondWithError(w, 500, fmt.Sprintf("Error adding feed to user: %v", err))
+		return
+	}
+
+	respondWithJson(w, 200, convertFeedFollows(feeds))
+}
+
+func (a *apiConfig) removeFeedFromUser(w http.ResponseWriter, r *http.Request, user database.User) {
+	// get the feed id from the url
+	feedID := r.URL.Query().Get("feed_id")
+	if feedID == "" {
+		respondWithError(w, 400, "Missing feed_id parameter")
+		return
+	}
+
+	// add the feed to the user
+	_, err := a.DB.AddUserFeedLink(r.Context(), database.AddUserFeedLinkParams{
+		UserID: user.ID,
+		FeedID: uuid.MustParse(feedID),
+	})
+
+	if err != nil {
+		respondWithError(w, 500, fmt.Sprintf("Error adding feed to user: %v", err))
+		return
+	}
+
+	respondWithJson(w, 200, struct{}{})
+}
